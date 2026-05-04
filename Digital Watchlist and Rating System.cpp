@@ -1,89 +1,131 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <unordered_map>
 
 using namespace std;
 
+// struct for storing movie details
+// no need to include title here since it will be the key in the hash table
 struct MovieInfo {
     string status;
     string rating;
 };
 
-// Main storage for movies (its like database)
+// this is our hash table
+// it connects a movie title (key) to its info (value)
 unordered_map<string, MovieInfo> watchlist;
 
+// function to save movies into a file
+void saveMovies() {
+    ofstream file("movies.txt");
+
+    // loop through the hash table
+    // pair.first = title
+    // pair.second = MovieInfo (status + rating)
+    for (auto const& pair : watchlist) {
+        file << pair.first << "\n" 
+             << pair.second.status << "\n" 
+             << pair.second.rating << "\n";
+    }
+
+    file.close();
+}
+
+// function to load movies from the file
+void loadMovies() {
+    ifstream file("movies.txt");
+    string title, status, rating;
+
+    // read 3 lines at a time (title, status, rating)
+    while (getline(file, title)) {
+        getline(file, status);
+        getline(file, rating);
+
+        // rebuild the hash table
+        watchlist[title] = {status, rating};
+    }
+
+    file.close();
+}
+
+// display all movies
 void displayMovies() {
-    cout << "\n=== My Watchlist Diary ===\n";
-    
-    // Check if the list is empty
+    cout << "--- My Watchlist ---\n";
+
     if (watchlist.empty()) {
-        cout << "Your list is empty! Add some movies.\n";
+        cout << "No movies added yet.\n";
     } else {
-        // Loop through all movies in the list
+        int count = 1;
+
+        // loop and print each movie
         for (auto const& pair : watchlist) {
-            cout << "- " << pair.first << " | Status: " << pair.second.status 
-                 << " | Rating: " << pair.second.rating << "\n";
+            cout << count++ << ". " << pair.first 
+                 << " | " << pair.second.status 
+                 << " | " << pair.second.rating << "\n";
         }
     }
-    
-    cout << "====================\n";
+
+    cout << "--------------------\n";
 }
 
-void addMovie() {
+// add new movie or update existing one
+void addOrUpdateMovie() {
     string title, status, rating;
-    
+
     cout << "\nMovie Title: ";
-    // ws is used to clear leftover spaces from previous input
-    getline(cin >> ws, title); 
-    
+    // ws removes leftover newline from previous input
+    getline(cin >> ws, title);
+
     cout << "Status (Watched/Unwatched): ";
     getline(cin, status);
-    
-    cout << "Rating (e.g., 10/10): ";
+
+    cout << "Rating: ";
     getline(cin, rating);
-    
-    // Quickly adds or updates a movie (cuz hash map is fast)
-    watchlist[title] = {status, rating}; 
-    
-    cout << "[Success]: Movie added/updated!\n";
+
+    // this line handles both adding and updating
+    // if title exists -> update
+    // if not -> create new entry
+    watchlist[title] = {status, rating};
+
+    saveMovies();
+    cout << "\nSaved successfully!\n";
 }
 
+// delete a movie
 void deleteMovie() {
-    // Check if the list is empty first
-    if (watchlist.empty()) {
-        cout << "\nList is already empty.\n";
-        return;
-    }
-    
+    if (watchlist.empty()) return;
+
     string title;
-    cout << "\nEnter the exact title of the movie to delete: ";
+    cout << "Enter the EXACT title of the movie to delete: ";
     getline(cin >> ws, title);
-    
-    // Tries to find and delete the movie
+
+    // erase returns 1 if found, 0 if not
     if (watchlist.erase(title)) {
-        cout << "[Success]: Movie deleted.\n";
+        saveMovies();
+        cout << "\nDeleted.\n";
     } else {
-        cout << "[Error]: Could not find a movie with that title.\n";
+        cout << "\nMovie not found.\n";
     }
 }
 
 int main() {
+    loadMovies(); // load saved data first
+
     int choice = 0;
-    
-    // Main loop (keeps running until user exits)
+
     while (choice != 4) {
-        cout << "\n1. Add / Update a Movie\n2. View Watchlist\n3. Delete a Movie\n4. Exit\nChoose an option: ";
+        displayMovies();
+
+        cout << "\n1. Add/Update Movie\n2. Delete Movie\n3. Refresh List\n4. Exit\n\nChoice: ";
         cin >> choice;
-        
+
         if (choice == 1) {
-            addMovie();
+            addOrUpdateMovie();
         } else if (choice == 2) {
-            displayMovies();
-        } else if (choice == 3) {
             deleteMovie();
         }
     }
-    
-    cout << "Exiting program...\n";
+
     return 0;
 }
