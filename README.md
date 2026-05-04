@@ -22,11 +22,13 @@ A simple C++ program to manage a digital movie watchlist.
 
 ## 🚀 How to Run
 Run these commands in your terminal:
+
 ```bash
 g++ "Digital Watchlist and Rating System.cpp" -o watchlist
 ./watchlist
+```
 
-Notes
-The title must be typed exactly when deleting a movie.
-The list is not alphabetically sorted (because hash tables are unordered).
-Uses basic terminal input.
+## 📌 Notes
+* The title must be typed exactly when deleting a movie.
+* The list is not alphabetically sorted (because hash tables are unordered).
+* Uses basic terminal input.
